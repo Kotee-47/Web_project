@@ -7,13 +7,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 from .db_session import SqlAlchemyBase
 
-# Пункты 1-3 см. в main.py
-# 4. Кроме того, наша модель для пользователей
-# должна содержать ряд методов
-# для корректной работы flask-login,
-# но мы не будем создавать их руками,
-# а воспользуемся множественным наследованием.
-# Далее п. 5 см. в файле: forms/user.py
 class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 

@@ -14,7 +14,7 @@ app = Flask(__name__)
 # 2. Затем сразу после создания приложения flask инициализируем LoginManager:
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+app.config['SECRET_KEY'] = 'neurosama_kte'
 
 
 # 3. Для верной работы flask-login у нас должна быть
