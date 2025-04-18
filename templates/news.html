@@ -14,15 +14,6 @@
             {% endfor %}
         </p>
         <p>
-            {{ form.subtitle.label }}<br>
-            {{ form.subtitle(class="form-control") }}<br>
-            {% for error in form.subtitle.errors %}
-                <p class="alert alert-danger" role="alert">
-                    {{ error }}
-                </p>
-            {% endfor %}
-        </p>
-        <p>
             {{ form.content.label }}<br>
             {{ form.content(class="form-control") }}<br>
             {% for error in form.content.errors %}
