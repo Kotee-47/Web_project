@@ -1,9 +1,9 @@
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, join_room, leave_room, send
-import os  # Import the os module
+import os
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')  # Get SECRET_KEY from environment
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')  # Получаем секретный ключ из переменной окружения
 socketio = SocketIO(app)
 
 # Словарь для хранения комнат и пользователей в них.
@@ -48,7 +48,7 @@ def handle_send_message(data):
     username = data['username']
     message = data['message']
     if room_name in rooms:
-        emit('receive_message', {'username': username, 'message': message}, room=room_name)  # Отправляем сообщение всем в комнате
+        emit('receive_message', {'username': username, 'message': message, 'sender': username}, room=room_name)  # Отправляем сообщение всем в комнате и добавляем sender
         print(f'Message sent in room "{room_name}": {username}: {message}')
     else:
         emit('room_not_found', {'room': room_name})
