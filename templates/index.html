@@ -140,11 +140,13 @@
         });
 
         socket.on('receive_message', (data) => {
+            console.log("Received message:", data);  // Add this line
             const isMyMessage = data.username === username;
             addMessage(data.username, data.message, isMyMessage);
         });
 
         function addMessage(username, message, isMyMessage) {
+            console.log("Adding message:", username, message, isMyMessage);  // Add this line
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message');
