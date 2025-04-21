@@ -1,7 +1,7 @@
 import flask
 from flask import request, jsonify, make_response
 from . import db_session
-from .news import News
+from .messages import News
 
 
 
