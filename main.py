@@ -105,27 +105,32 @@ def login():
 @app.route('/', methods=['GET', 'POST'])
 def index():
     chat_id = request.args.get('chat_id', 'default')  # Получаем идентификатор чата из параметров URL
+    form = MessageForm()
     if request.method == 'POST':
         # if 'message' in request.form:
         if 1:
-            form = MessageForm()
             if form.validate_on_submit():
                 db_sess = db_session.create_session()
-                messages = Messages()
-                messages.content = form.content.data
-                messages.chat_id = chat_id
+                messages = Messages(
+                    content=form.content.data,
+                    chat_id=chat_id,
+                )
+                # messages.content = form.content.data
+                # messages.chat_id = chat_id
                 current_user.messages.append(messages)
                 db_sess.merge(current_user)
                 db_sess.commit()
             # message = request.form['message']
             # save_message_to_file(chat_id, message)  # Сохраняем сообщение в файл
-            return redirect(url_for('index', chat_id=chat_id))  # Перенаправляем на ту же страницу
+            # return redirect(url_for('index', chat_id=chat_id))  # Перенаправляем на ту же страницу
+            messages = load_messages_from_file(chat_id)
+            return render_template('index.html', messages=messages, chat_id=chat_id, form=form)
         # elif 'chat_id' in request.form:
         #     new_chat_id = request.form['chat_id']
         #     return redirect(url_for('index', chat_id=new_chat_id))  # Перенаправляем на новый чат
 
     messages = load_messages_from_file(chat_id)
-    return render_template('index.html', messages=messages, chat_id=chat_id)
+    return render_template('index.html', messages=messages, chat_id=chat_id, form=form)
 
 
 @app.errorhandler(404)
