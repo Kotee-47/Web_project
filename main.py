@@ -9,10 +9,20 @@ socketio = SocketIO(app)
 
 DATABASE = 'chat.db'
 
+USER_DATABASE = 'users.db'
+
+
 def get_db_connection():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def get_user_db_connection():
+    conn = sqlite3.connect(USER_DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
 
 def migrate_timestamp_column():
     conn = get_db_connection()
@@ -38,13 +48,14 @@ def migrate_timestamp_column():
         else:
             print("Column 'timestamp' already exists.")
 
-
         conn.commit()
         print("Migration completed successfully.")
 
     except sqlite3.OperationalError as e:
+        # Если таблицы не существует(чтобы был except)
         if "no such table: messages" in str(e):
-            print("Table 'messages' does not exist.  Please create the table manually or adjust the code to create it.")
+            print(
+                "Table 'messages' does not exist.  Please create the table manually or adjust the code to create it.")
         else:
             print(f"An unexpected error occurred: {e}")
 
@@ -56,12 +67,48 @@ def migrate_timestamp_column():
 
 migrate_timestamp_column()
 
-
+# Словарь для хранения комнат и пользователей в них.
 rooms = {}
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@socketio.on('authenticate')
+def handle_authentication(data):
+    username = data['username']
+    password = data['password']
+
+    conn = get_user_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+
+    if user:
+        if user['password'] == password:
+            emit('auth_success', {'username': username})
+            print(f'User "{username}" authenticated successfully.')
+        else:
+            emit('auth_error', {'message': 'Неверный пароль.'})
+            print(f'Authentication failed for user "{username}".')
+    else:
+        try:
+            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            conn.commit()
+            emit('auth_success', {'username': username})
+            print(f'User "{username}" registered and authenticated successfully.')
+        except sqlite3.IntegrityError:
+            emit('auth_error', {'message': 'Имя пользователя уже занято.'})
+            print(f'Registration failed for user "{username}". Username already exists.')
+        except Exception as e:
+            emit('auth_error', {'message': f'Ошибка регистрации: {str(e)}'})
+            print(f'Registration failed for user "{username}". Error: {str(e)}')
+
+    conn.close()
+
 
 @socketio.on('create_room')
 def handle_create_room(data):
@@ -71,6 +118,7 @@ def handle_create_room(data):
     join_room(room_name)
     emit('room_created', {'room': room_name})
     print(f'Room "{room_name}" created')
+
 
 @socketio.on('join_room')
 def handle_join_room(data):
@@ -99,15 +147,18 @@ def handle_join_room(data):
     else:
         emit('room_not_found', {'room': room_name})
 
+
 @socketio.on('send_message')
 def handle_send_message(data):
     room_name = data['room']
     username = data['username']
     message = data['message']
     if room_name in rooms:
+        # Сохранение в базу данных
         conn = get_db_connection()
         cursor = conn.cursor()
-        cursor.execute("INSERT INTO messages (room_name, username, message) VALUES (?, ?, ?)", (room_name, username, message))
+        cursor.execute("INSERT INTO messages (room_name, username, message) VALUES (?, ?, ?)",
+                       (room_name, username, message))
         conn.commit()
         conn.close()
 
@@ -115,6 +166,7 @@ def handle_send_message(data):
         print(f'Message sent in room "{room_name}": {username}: {message}')
     else:
         emit('room_not_found', {'room': room_name})
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
