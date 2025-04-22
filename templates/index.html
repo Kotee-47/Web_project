@@ -54,12 +54,7 @@
     </a>
       {% endfor %}
           </div>
-      </div>
-<!--    <form method="POST">-->
-<!--        <input type="text" name="message" autocomplete="off" required>-->
-<!--        <button type="submit">Отправить</button>-->
-<!--    </form>-->
-    <form action="" method="post">
+      <form action="" method="post">
         {{ form.hidden_tag() }}
         <p>
             {{ form.content.label }}<br>
@@ -73,6 +68,11 @@
         <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
         {{ message }}
     </form>
+      </div>
+<!--    <form method="POST">-->
+<!--        <input type="text" name="message" autocomplete="off" required>-->
+<!--        <button type="submit">Отправить</button>-->
+<!--    </form>-->
       </div>
 </div>
 
