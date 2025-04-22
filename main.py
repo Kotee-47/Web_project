@@ -114,6 +114,9 @@ def index():
             # messages.chat_id = chat_id
             db_sess.add(messages)
             db_sess.commit()
+        elif 'chat_id' in request.form:
+            new_chat_id = request.form['chat_id']
+            return redirect(url_for('index', chat_id=new_chat_id))
         messages = load_messages_from_db(chat_id)
         return render_template('index.html', messages=messages, chat_id=chat_id, form=form)
     messages = load_messages_from_db(chat_id)

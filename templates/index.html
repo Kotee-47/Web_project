@@ -8,6 +8,12 @@
           integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
           crossorigin="anonymous">
     <title>Мессенджер</title>
+    <style>
+        "overflow-y": (
+            property: overflow-y,
+            values: auto hidden visible scroll,
+        ),
+    </style>
 </head>
 <body>
 <header>
@@ -33,9 +39,10 @@
 
     <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
   <div class="list-group">
+      <div class="overflow-y">
       {% for msg in messages %}
     <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
-      <img src="https://github.com/twbs.png" alt="" width="32" height="32" class="rounded-circle flex-shrink-0">
+      <img src="https://www.koolbadges.co.uk/images/thumbnails/redquestion-650x650.jpg" alt="" width="32" height="32" class="rounded-circle flex-shrink-0">
       <div class="d-flex gap-2 w-100 justify-content-between">
         <div>
           <h6 class="mb-0">{{ msg.sender }}</h6>
@@ -45,6 +52,7 @@
       </div>
     </a>
       {% endfor %}
+      </div>
 <!--    <form method="POST">-->
 <!--        <input type="text" name="message" autocomplete="off" required>-->
 <!--        <button type="submit">Отправить</button>-->
