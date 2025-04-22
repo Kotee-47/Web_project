@@ -25,7 +25,10 @@ def load_messages_from_db(chat_id):
             mes_new.append({'sender':(i.user_id.split('%8%')[1]), 'content':i.content, 'date':(str(i.created_date)[:-7])})
     else:
         mes_new = ['система', 'войдите в аккаунт', '00:00']
-    return mes_new
+    ms_new = []
+    for i in range(len(mes_new) - 1, 0, -1):
+        ms_new.append(mes_new[i])
+    return ms_new
 
 
 def main():
