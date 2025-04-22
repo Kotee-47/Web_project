@@ -23,20 +23,20 @@
             word-break: break-word;
         }
         .my-message {
-            background-color: #e8f5e9; /* Светло-зеленый  */
+            background-color: #e8f5e9; /* Светло-зеленый */
             text-align: right;
         }
         .other-message {
-            background-color: #e5f7ff; /* Светло-голубой*/
+            background-color: #e5f7ff; /* Светло-голубой */
             text-align: left;
         }
 
         #auth-form {
-            display: block; /* Изначально отображаем форму аутентификации */
+            display: block;
         }
 
         #room-creation, #room-joining, #chat-interface {
-            display: none; /* Скрываем остальные элементы */
+            display: none;
         }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.1.3/socket.io.js"></script>
@@ -77,7 +77,7 @@
 
         let currentRoom = null;
         let username = null;
-        let isAuthenticated = false; //аутентификация
+        let isAuthenticated = false;
 
         function updateUI() {
             if (!isAuthenticated) {
@@ -106,7 +106,7 @@
             const password = document.getElementById('auth-password').value;
 
             if (username && password) {
-                socket.connect(); // Подключаемся
+                socket.connect(); // Подключаемся к серверу
                 socket.emit('authenticate', { username: username, password: password });
             } else {
                 alert("Введите имя пользователя и пароль.");
@@ -148,14 +148,14 @@
 
         socket.on('auth_success', (data) => {
             isAuthenticated = true;
-            username = data.username; // Сохраняем имя
+            username = data.username;
             document.getElementById('error-message').innerText = "";
             alert(`Добро пожаловать, ${username}!`);
             updateUI();
         });
 
         socket.on('auth_error', (data) => {
-            document.getElementById('error-message').innerText = data.message; // сообщение об ошибке
+            document.getElementById('error-message').innerText = data.message;
             isAuthenticated = false;
             username = null;
             updateUI();
@@ -188,11 +188,12 @@
         });
 
         socket.on('receive_message', (data) => {
+            console.log("Received message:", data);  // Add this line
             const isMyMessage = data.username === username;
-            addMessage(data.username, data.message, isMyMessage);
+            addMessage(data.username, data.message, isMyMessage, data.timestamp);
         });
 
-        function addMessage(username, message, isMyMessage) {
+        function addMessage(username, message, isMyMessage, timestamp) {
             const messagesDiv = document.getElementById('messages');
             const messageDiv = document.createElement('div');
             messageDiv.classList.add('message');
@@ -201,12 +202,21 @@
             } else {
                 messageDiv.classList.add('other-message');
             }
-            messageDiv.innerText = `${username}: ${message}`;
+
+            // дата и время
+            const date = new Date(timestamp);
+            const formattedTime = date.toLocaleTimeString();
+            const formattedDate = date.toLocaleDateString();
+
+            messageDiv.innerHTML = `
+                ${username} <span style="font-size: smaller; color: gray;">(${formattedDate} ${formattedTime})</span>: ${message}
+            `;
+
             messagesDiv.appendChild(messageDiv);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        //updateUI при загрузке
+        // Вызываем updateUI
         updateUI();
     </script>
 </body>
