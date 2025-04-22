@@ -38,10 +38,10 @@
       <img src="https://github.com/twbs.png" alt="" width="32" height="32" class="rounded-circle flex-shrink-0">
       <div class="d-flex gap-2 w-100 justify-content-between">
         <div>
-          <h6 class="mb-0">Message</h6>
-          <p class="mb-0 opacity-75">{{ msg.strip() }}</p>
+          <h6 class="mb-0">{{ msg.sender }}</h6>
+          <p class="mb-0 opacity-75">{{ msg.content }}</p>
         </div>
-        <small class="opacity-50 text-nowrap">now</small>
+        <small class="opacity-50 text-nowrap">{{ msg.date }}</small>
       </div>
     </a>
       {% endfor %}

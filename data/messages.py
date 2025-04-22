@@ -7,7 +7,7 @@ from sqlalchemy_serializer import SerializerMixin
 from .db_session import SqlAlchemyBase
 
 
-class Messages(SqlAlchemyBase, UserMixin, SerializerMixin):
+class Messages(SqlAlchemyBase):
     __tablename__ = 'messages'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)

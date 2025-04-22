@@ -5,6 +5,6 @@ from wtforms.validators import DataRequired
 
 
 class MessageForm(FlaskForm):
-    content = TextAreaField("Сообщение", validators=[DataRequired()])
-    chat_id = TextAreaField("Чат", validators=[DataRequired()])
+    content = TextAreaField("Сообщение")
+    chat_id = TextAreaField("Чат")
     submit = SubmitField('Отправить')
