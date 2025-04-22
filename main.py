@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, abort, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
+from datetime import datetime
 
 from forms.chats import ChatForm
 from forms.messages import MessageForm
@@ -24,16 +25,17 @@ def load_messages_from_db(chat_id):
         for i in messages:
             mes_new.append({'sender':(i.user_id.split('%8%')[1]), 'content':i.content, 'date':(str(i.created_date)[:-7])})
     else:
-        mes_new = ['система', 'войдите в аккаунт', '00:00']
-    ms_new = []
-    for i in range(len(mes_new) - 1, 0, -1):
-        ms_new.append(mes_new[i])
-    return ms_new
+        mes_new = [{'sender':'система', 'content':'войдите в аккаунт', 'date':(str(datetime.now())[:-7])}]
+    return mes_new
 
 
 def main():
     db_session.global_init("db/main.db")
     app.run()
+
+
+def reload():
+    return redirect("/")
 
 
 @app.route('/create_chat', methods=['GET', 'POST'])
@@ -105,7 +107,7 @@ def login():
 def index():
     chat_id = request.args.get('chat_id', 'default')  # Получаем идентификатор чата из параметров URL
     form = MessageForm()
-    if request.method == 'POST':
+    if request.method == 'POST' and current_user.is_authenticated:
         db_sess = db_session.create_session()
         if form.content.data:
             messages = Messages(
