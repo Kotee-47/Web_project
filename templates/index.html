@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet"
+          href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+          integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh"
+          crossorigin="anonymous">
+    <title>Мессенджер</title>
+    <style>
+        #messages {
+            height: 600px;
+            width: auto;
+            overflow-y: scroll;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-light bg-light">
+        <a class="navbar-brand" href="#">Чат: {{ chat_id }}</a>
+        <form method="POST">
+        <label for="chat_id">Введите название чата:</label>
+        <input type="text" name="chat_id" required>
+        <button type="submit">Перейти в чат</button>
+        </form>
+        <div class="navbar-brand">
+        {% if current_user.is_authenticated %}
+                {{ current_user.name }}
+                <a href="/logout" class="btn btn-danger">Выход</a>
+        {% else %}
+                <a class="btn btn-primary " href="/register">Зарегистрироваться</a>
+                <a class="btn btn-success" href="/login">Войти</a>
+
+        {% endif %}
+        </div>
+    </nav>
+</header>
+<div class="okrugle">
+    <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
+  <div class="list-group">
+      <div id="messages">
+      {% for msg in messages %}
+    <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+      <img src="https://www.koolbadges.co.uk/images/thumbnails/redquestion-650x650.jpg" alt="" width="32" height="32" class="rounded-circle flex-shrink-0">
+      <div class="d-flex gap-2 w-100 justify-content-between">
+          <h6 class="mb-0">{{ msg.sender }}</h6>
+          <p>ㅤㅤ</p>
+          <p class="mb-0 opacity-75">{{ msg.content }}</p>
+          <p>ㅤㅤ</p>
+        <small class="opacity-50 text-nowrap">{{ msg.date }}</small>
+          </div>
+    </a>
+      {% endfor %}
+          </div>
+      <form action="" method="post">
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.content.label }}<br>
+            {{ form.content(class="form-control") }}<br>
+            {% for error in form.content.errors %}
+                <p content="alert alert-danger" role="alert">
+                    {{ error }}
+                </p>
+            {% endfor %}
+        </p>
+        <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+        {{ message }}
+    </form>
+      </div>
+<!--    <form method="POST">-->
+<!--        <input type="text" name="message" autocomplete="off" required>-->
+<!--        <button type="submit">Отправить</button>-->
+<!--    </form>-->
+      </div>
+</div>
+
+</body>
+</html>
