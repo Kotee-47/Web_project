@@ -23,9 +23,9 @@ def load_messages_from_db(chat_id):
         messages = db_sess.query(Messages).filter(Messages.chat_id == chat_id)
         mes_new = []
         for i in messages:
-            mes_new.append({'sender':(i.user_id.split('%8%')[1]), 'content':i.content, 'date':(str(i.created_date)[:-7])})
+            mes_new.append({'sender': (i.user_id.split('%8%')[1]), 'content': i.content, 'date': (str(i.created_date)[:-7])})
     else:
-        mes_new = [{'sender':'система', 'content':'войдите в аккаунт', 'date':(str(datetime.now())[:-7])}]
+        mes_new = [{'sender': 'система', 'content': 'войдите в аккаунт', 'date': (str(datetime.now())[:-7])}]
     return mes_new
 
 
@@ -119,6 +119,7 @@ def index():
             # messages.chat_id = chat_id
             db_sess.add(messages)
             db_sess.commit()
+            return redirect("/")
         elif 'chat_id' in request.form:
             new_chat_id = request.form['chat_id']
             return redirect(url_for('index', chat_id=new_chat_id))

@@ -10,11 +10,14 @@
     <title>Мессенджер</title>
     <style>
         #messages {
-            height: 600px;
+            height: 400px;
             width: auto;
             overflow-y: scroll;
         }
     </style>
+    <script type="text/javascript">
+            window.onload = function(){ document.getElementById('messages').scrollTop = 9999;            }
+        </script>
 </head>
 <body>
 <header>
@@ -37,7 +40,7 @@
         </div>
     </nav>
 </header>
-<div class="okrugle">
+<div class="okrugle" id="scroll">
     <div class="d-flex flex-column flex-md-row p-4 gap-4 py-md-5 align-items-center justify-content-center">
   <div class="list-group">
       <div id="messages">
