@@ -7,10 +7,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 socketio = SocketIO(app)
 
-# база данных для чата
+# Конфигурация базы данных SQLite для чата
 DATABASE = 'chat.db'
 
-# база данных для пользователей
+# Конфигурация базы данных SQLite для пользователей
 USER_DATABASE = 'users.db'
 
 
@@ -29,6 +29,7 @@ def get_user_db_connection():
 def migrate_timestamp_column():
     conn = get_db_connection()
     if conn is None:
+        print("Failed to get database connection. Migration aborted.")
         return
 
     cursor = conn.cursor()
@@ -42,11 +43,15 @@ def migrate_timestamp_column():
                 timestamp_exists = True
                 break
 
+        if not timestamp_exists:
+            cursor.execute("ALTER TABLE messages ADD COLUMN timestamp DATETIME DEFAULT CURRENT_TIMESTAMP")
+        else:
+            pass
+
         conn.commit()
         print("Migration completed successfully.")
 
     except sqlite3.OperationalError as e:
-        # Если таблицы не существует(чтобы был except)
         if "no such table: messages" in str(e):
             print(
                 "Table 'messages' does not exist.  Please create the table manually or adjust the code to create it.")
@@ -60,6 +65,7 @@ def migrate_timestamp_column():
 
 migrate_timestamp_column()
 
+# Словарь для хранения комнат и пользователей в них.
 rooms = {}
 
 
@@ -80,7 +86,7 @@ def handle_authentication(data):
     user = cursor.fetchone()
 
     if user:
-        # проверяем пароль
+        # Пользователь существует
         if user['password'] == password:
             emit('auth_success', {'username': username})
             print(f'User "{username}" authenticated successfully.')
@@ -88,7 +94,7 @@ def handle_authentication(data):
             emit('auth_error', {'message': 'Неверный пароль.'})
             print(f'Authentication failed for user "{username}".')
     else:
-        # регистрируем
+        # Пользователя не существует
         try:
             cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
             conn.commit()
@@ -135,7 +141,7 @@ def handle_join_room(data):
         for message in messages:
             message_data = {'username': message['username'], 'message': message['message'],
                             'timestamp': message['timestamp']}
-            print(f"Emitting message: {message_data}, Room: {request.sid}")
+            print(f"Emitting message: {message_data}, Room: {request.sid}")  # Add this line
             emit('receive_message', message_data, room=request.sid)
 
         print(f'User "{username}" joined room "{room_name}"')
@@ -149,7 +155,6 @@ def handle_send_message(data):
     username = data['username']
     message = data['message']
     if room_name in rooms:
-        # Сохраняем в базу данных
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("INSERT INTO messages (room_name, username, message) VALUES (?, ?, ?)",
@@ -163,11 +168,25 @@ def handle_send_message(data):
 
         conn.close()
 
-        emit('receive_message', {'username': username, 'message': message, 'timestamp': timestamp}, room=room_name)
+        emit('receive_message', {'username': username, 'message': message, 'timestamp': timestamp}, room=room_name) # Передаем timestamp
         print(f'Message sent in room "{room_name}": {username}: {message}')
     else:
         emit('room_not_found', {'room': room_name})
 
+@socketio.on('clear_chat')
+def handle_clear_chat(data):
+    room_name = data['room']
+    if room_name in rooms:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM messages WHERE room_name = ?", (room_name,))
+        conn.commit()
+        conn.close()
+
+        emit('chat_cleared', room=room_name)
+        print(f'Chat cleared in room "{room_name}"')
+    else:
+        print(f'Room "{room_name}" not found.')
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

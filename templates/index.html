@@ -64,6 +64,7 @@
 
         <div id="chat-interface">
             <div id="messages"></div>
+            <button id="clear-chat-button" onclick="clearChat()" style="background-color: #FFC0CB; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer;">Очистить чат</button>
             <input type="text" id="message-input" placeholder="Введите сообщение">
             <button onclick="sendMessage()">Отправить</button>
             <div id="current-room"></div>
@@ -184,13 +185,18 @@
         socket.on('room_joined', (data) => {
             currentRoom = data.room;
             alert(`Вы присоединились к комнате "${data.room}" как ${username}`);
+            document.getElementById('messages').innerHTML = '';
             updateUI();
         });
 
         socket.on('receive_message', (data) => {
-            console.log("Received message:", data);  // Add this line
+            console.log("Received message:", data);
             const isMyMessage = data.username === username;
-            addMessage(data.username, data.message, isMyMessage, data.timestamp);
+            addMessage(data.username, data.message, isMyMessage, data.timestamp); // timestamp
+        });
+
+        socket.on('chat_cleared', () => {
+            document.getElementById('messages').innerHTML = '';
         });
 
         function addMessage(username, message, isMyMessage, timestamp) {
@@ -203,7 +209,7 @@
                 messageDiv.classList.add('other-message');
             }
 
-            // дата и время
+            // Форматируем дату и время
             const date = new Date(timestamp);
             const formattedTime = date.toLocaleTimeString();
             const formattedDate = date.toLocaleDateString();
@@ -216,7 +222,7 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        // Вызываем updateUI
+        // Вызываем updateUI при загрузке страницы
         updateUI();
     </script>
 </body>
