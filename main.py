@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, abort, jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from datetime import datetime
+import pytz
 
 from forms.chats import ChatForm
 from forms.messages import MessageForm
@@ -110,10 +111,13 @@ def index():
     if request.method == 'POST' and current_user.is_authenticated:
         db_sess = db_session.create_session()
         if form.content.data:
+            Moscow_tz = pytz.timezone('Europe/Moscow')
+            now = datetime.now(Moscow_tz)
             messages = Messages(
                 content=form.content.data,
                 chat_id=str(chat_id),
-                user_id=(str(current_user.get_id()) + '%8%' + str(current_user.get_name()))
+                user_id=(str(current_user.get_id()) + '%8%' + str(current_user.get_name())),
+                created_date=now
             )
             # messages.content = form.content.data
             # messages.chat_id = chat_id
