@@ -107,7 +107,7 @@
             const password = document.getElementById('auth-password').value;
 
             if (username && password) {
-                socket.connect(); // Подключаемся к серверу
+                socket.connect(); // Подключаемся
                 socket.emit('authenticate', { username: username, password: password });
             } else {
                 alert("Введите имя пользователя и пароль.");
@@ -149,7 +149,7 @@
 
         socket.on('auth_success', (data) => {
             isAuthenticated = true;
-            username = data.username;
+            username = data.username; // Сохраняем имя
             document.getElementById('error-message').innerText = "";
             alert(`Добро пожаловать, ${username}!`);
             updateUI();
@@ -192,10 +192,11 @@
         socket.on('receive_message', (data) => {
             console.log("Received message:", data);
             const isMyMessage = data.username === username;
-            addMessage(data.username, data.message, isMyMessage, data.timestamp); // timestamp
+            addMessage(data.username, data.message, isMyMessage, data.timestamp);
         });
 
         socket.on('chat_cleared', () => {
+            console.log("Chat cleared on client");
             document.getElementById('messages').innerHTML = '';
         });
 
@@ -222,7 +223,12 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         }
 
-        // Вызываем updateUI при загрузке страницы
+        function clearChat() {
+            console.log("Clearing chat in room:", currentRoom); // Add this line
+            socket.emit('clear_chat', { room: currentRoom });
+        }
+
+        // Вызываем updateUI
         updateUI();
     </script>
 </body>
