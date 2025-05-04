@@ -2,15 +2,16 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO, emit, join_room, leave_room, send
 import os
 import sqlite3
+import bcrypt  # для хэширования
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 socketio = SocketIO(app)
 
-# База данных SQLite для чата
+# Конфигурация базы данных SQLite для чата
 DATABASE = 'chat.db'
 
-# База данных SQLite для пользователей
+# Конфигурация базы данных SQLite для пользователей
 USER_DATABASE = 'users.db'
 
 
@@ -25,8 +26,6 @@ def get_user_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
-
-# Словарь для хранения комнат и пользователей.
 rooms = {}
 
 
@@ -43,13 +42,13 @@ def handle_authentication(data):
     conn = get_user_db_connection()
     cursor = conn.cursor()
 
-    # Проверяем, существует ли пользователь
+    # существует ли пользователь с таким именем
     cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
     user = cursor.fetchone()
 
     if user:
-        # Проверяем пароль
-        if user['password'] == password:
+        # проверяем пароль
+        if bcrypt.checkpw(password.encode('utf-8'), user['password'].encode('utf-8')): # Проверяем хеш пароля
             emit('auth_success', {'username': username})
             print(f'User "{username}" authenticated successfully.')
         else:
@@ -57,8 +56,9 @@ def handle_authentication(data):
             print(f'Authentication failed for user "{username}".')
     else:
         # регистрируем
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8') # Хешируем пароль
         try:
-            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            cursor.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_password))
             conn.commit()
             emit('auth_success', {'username': username})
             print(f'User "{username}" registered and authenticated successfully.')
@@ -75,7 +75,7 @@ def handle_authentication(data):
 @socketio.on('create_room')
 def handle_create_room(data):
     room_name = data['room']
-    rooms[room_name] = {'users': []}  # Комната
+    rooms[room_name] = {'users': []}
 
     join_room(room_name)
     emit('room_created', {'room': room_name})
@@ -100,6 +100,7 @@ def handle_join_room(data):
         print(f"Messages from DB: {messages}")
         conn.close()
 
+
         for message in messages:
             message_data = {'username': message['username'], 'message': message['message'],
                             'timestamp': message['timestamp']}
@@ -117,12 +118,14 @@ def handle_send_message(data):
     username = data['username']
     message = data['message']
     if room_name in rooms:
+        # Сохраняем сообщение
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("INSERT INTO messages (room_name, username, message) VALUES (?, ?, ?)",
                        (room_name, username, message))
         conn.commit()
 
+        # Получаем timestamp только что добавленного сообщения
         cursor.execute("SELECT timestamp FROM messages WHERE room_name = ? AND username = ? AND message = ? ORDER BY id DESC LIMIT 1",
                        (room_name, username, message))
         message_data = cursor.fetchone()
